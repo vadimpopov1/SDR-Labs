@@ -1,0 +1,3 @@
+/Users/vadimpopov/Программирование/Programming/sdr/build/CMakeFiles/main.dir
+/Users/vadimpopov/Программирование/Programming/sdr/build/CMakeFiles/edit_cache.dir
+/Users/vadimpopov/Программирование/Programming/sdr/build/CMakeFiles/rebuild_cache.dir
