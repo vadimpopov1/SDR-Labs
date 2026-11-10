@@ -94,6 +94,9 @@ int run(const char *uri, bool is_tx) {
   if (!file) { perror("fopen"); return 1; }
   size_t buffers_read = 0;
 
+// Hello, World!
+// 01001000 01100101 01101100 01101100 01101111 00101100 00100000 01010111 01101111 01110010 01101100 01101100 00100001
+
   for (size_t i = 0; i < 2 * tx_mtu; i += 2) {
     tx_buff[i] = 1500 << 4;      // I
     tx_buff[i + 1] = 1500 << 4;  // Q
