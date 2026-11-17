@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstring>
 
 static const double freq1 = 800e6;
 static const double freq2 = 850e6;
@@ -97,9 +98,32 @@ int run(const char *uri, bool is_tx) {
 // Hello, World!
 // 01001000 01100101 01101100 01101100 01101111 00101100 00100000 01010111 01101111 01110010 01101100 01101100 00100001
 
-  for (size_t i = 0; i < 2 * tx_mtu; i += 2) {
-    tx_buff[i] = 1500 << 4;      // I
-    tx_buff[i + 1] = 1500 << 4;  // Q
+  char word[] = "Hello, World!";
+  size_t len = std::strlen(word);
+
+  uint8_t bits[8 * len];
+  
+  for (size_t i = 0; i < len; i++) {
+      for (int j = 0; j < 8; j++) {
+          bits[i * 8 + j] = (word[i] >> (7 - j)) & 1;
+      }
+  }
+
+  const size_t bits_len = sizeof(bits);
+  const size_t sps = 16;
+  const size_t header_samples = 16;
+
+  memset(tx_buff, 0, 2 * tx_mtu * sizeof(int16_t));
+
+  for (size_t b = 0; b < bits_len; b++) {
+    int16_t val = bits[b] ? (1500 << 4) : 0;
+    for (size_t s = 0; s < sps; s++) {
+      size_t sample_idx = header_samples + b * sps + s;
+      if (sample_idx < tx_mtu) {
+        tx_buff[2 * sample_idx] = val; // I
+        tx_buff[2 * sample_idx + 1] = val; // Q
+      }
+    }
   }
 
   void *rx_buffs[] = {rx_buffer};
