@@ -3,5 +3,6 @@ build/
 install/
 .vscode/
 .DS_Store
+/.DS_Store
 
 *.npy
