@@ -15,7 +15,7 @@ find_path(SOAPYSDR_INC SoapySDR/Device.h PATHS "${SDR_PREFIX}/include" NO_DEFAUL
 message(STATUS "SoapySDR library: ${SOAPYSDR_LIB}")
 message(STATUS "SoapySDR include: ${SOAPYSDR_INC}")
 
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp src/tx.cpp)
 
 target_include_directories(main PRIVATE "${SOAPYSDR_INC}")
 target_link_libraries(main PRIVATE "${SOAPYSDR_LIB}")

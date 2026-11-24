@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cstring>
+#include <vector>
+
+#include "../headers/tx.h"
 
 static const double freq1 = 800e6;
 static const double freq2 = 850e6;
@@ -110,21 +113,38 @@ int run(const char *uri, bool is_tx) {
   }
 
   const size_t bits_len = sizeof(bits);
-  const size_t sps = 16;
-  const size_t header_samples = 16;
+  const size_t num_symbols = bits_len / 2;
+  const size_t total_samples = num_symbols * SPS;
+  const size_t header_samples = 10;
+
+  std::vector<int16_t> qpsk_symbols(2 * num_symbols);
+  std::vector<int16_t> upsampled(2 * total_samples);
+  std::vector<int16_t> shaped(2 * total_samples);
+
+  // QPSK -> Upsampler -> Convolve
+  map_qpsk(bits, qpsk_symbols.data(), num_symbols);
+  upsample_zeros(qpsk_symbols.data(), num_symbols, upsampled.data(), SPS);
+  convolve(upsampled.data(), shaped.data(), total_samples);
 
   memset(tx_buff, 0, 2 * tx_mtu * sizeof(int16_t));
-
-  for (size_t b = 0; b < bits_len; b++) {
-    int16_t val = bits[b] ? (1500 << 4) : 0;
-    for (size_t s = 0; s < sps; s++) {
-      size_t sample_idx = header_samples + b * sps + s;
-      if (sample_idx < tx_mtu) {
-        tx_buff[2 * sample_idx] = val; // I
-        tx_buff[2 * sample_idx + 1] = val; // Q
-      }
+  for (size_t s = 0; s < total_samples; s++) {
+    size_t sample_idx = header_samples + s;
+    if (sample_idx < tx_mtu) {
+      tx_buff[2 * sample_idx] = shaped[2 * s]; // I
+      tx_buff[2 * sample_idx + 1] = shaped[2 * s + 1]; // Q
     }
   }
+
+  // for (size_t b = 0; b < bits_len; b++) {
+  //   int16_t val = bits[b] ? (1500 << 4) : 0;
+  //   for (size_t s = 0; s < SPS; s++) {
+  //     size_t sample_idx = header_samples + b * SPS + s;
+  //     if (sample_idx < tx_mtu) {
+  //       tx_buff[2 * sample_idx] = val; // I
+  //       tx_buff[2 * sample_idx + 1] = val; // Q
+  //     }
+  //   }
+  // }
 
   void *rx_buffs[] = {rx_buffer};
   const void *tx_buffs[] = {tx_buff};
